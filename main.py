@@ -51,6 +51,7 @@ def main():
             selected_profile = soup.find('span', {'class': 'namemc-rank namemc-rank-10'}).getText()
             info(f"You have successfully logged in with the NameMC profile {selected_profile}.\nIf this is incorrect, change your selected profile on NameMC.com.")
 
+
             # Begin Following
             with open(inputFile) as f:
                 names = f.read().splitlines()
@@ -62,7 +63,28 @@ def main():
                 try:
                     driver.find_element_by_css_selector('#followMenuButton').click()
                     driver.find_element_by_css_selector('#header > div.container.mt-3 > div > div.col > div > div > form > div > div > button:nth-child(1)').click()
-                    success(f'Successfully followed {name} | {pos}/{len(names)}')
+                    while True:
+                        soup = BeautifulSoup(driver.page_source, features="lxml")
+                        if soup.find('samp', {"class": "font-weight-bold"}):
+                            error(f"Failed to follow {name}. | {pos}/{len(names)}")
+                            ratelimitText = soup.find('samp', {"class": "font-weight-bold"}).getText()
+                            num = ""
+                            for char in ratelimitText:
+                                if char.isdigit():
+                                    num = num + char
+                            error(f"Ratelimit Detected. Waiting {num} seconds.")
+                            time.sleep(int(num))
+                        else:
+                            success(f'Successfully followed {name} | {pos}/{len(names)}')
+                            break
+                        driver.get(f"https://namemc.com/{name}")
+                        try:
+                            driver.find_element_by_css_selector('#followMenuButton').click()
+                            driver.find_element_by_css_selector('#header > div.container.mt-3 > div > div.col > div > div > form > div > div > button:nth-child(1)').click()
+                            success(f'Successfully followed {name} | {pos}/{len(names)}')
+                            break
+                        except:
+                            pass
                 except:
                     while True:
                         error(f"Failed to follow {name}. | {pos}/{len(names)}")
