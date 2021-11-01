@@ -1,7 +1,8 @@
 {
+    "enable-webhooks": true,
     "discord-webhook": "https://canary.discord.com/api/webhooks/0000000000000000000/example375897c98fhkyrbeydghe78at",
     "input-file": "input.txt",
 
-    "namemc-email": "",
-    "namemc-password": ""
+    "namemc-email": "example@example.com",
+    "namemc-password": "password123"
 }
