@@ -1,4 +1,10 @@
 # NameMC-Auto-Follower
 Automatically mass follows tons of NameMC profiles. (Creates REAL traffic to your profile)
 
-If this breaks idrc it took me an hour and it's like 1 AM rn.
+see https://namemc.com/prophecy for an example :)
+
+# Usage
+1. Download python and the requierments
+2. fill out config
+3. run the python file
+4. profit
