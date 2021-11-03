@@ -60,7 +60,9 @@ def main():
             exit()
         except:
             soup = BeautifulSoup(driver.page_source, features="lxml")
-            selected_profile = soup.find('span', {'class': 'namemc-rank namemc-rank-10'}).getText()
+            input()
+            selected_profile = soup.find('button', {'class': 'btn btn-light btn-block text-dark mb-3 text-ellipsis active'}).getText()
+            input()
             info(f"You have successfully logged in with the NameMC profile {selected_profile}.\nIf this is incorrect, change your selected profile on NameMC.com.")
 
             # Begin Following
