@@ -1,11 +1,13 @@
 from bs4 import BeautifulSoup
 import json
 import time
+import requests
 from colorama import Fore, Style
 import undetected_chromedriver.v2 as uc
 from discord_webhook import DiscordWebhook, DiscordEmbed
 
 # Created by Jam#1090, sorry for dogshit code :)
+
 
 def main():
     # Get Config Info
@@ -16,6 +18,13 @@ def main():
         inputFile = data['input-file'] # File To Take Names To Follow
         namemcEmail, namemcPassword = data['namemc-email'], data['namemc-password'] # NameMC Login Information
         f.close()
+
+    def valid(name):
+        r = requests.get(f"https://api.mojang.com/users/profiles/minecraft/{name}")
+        if r.status_code == 200:
+            return True
+        else:
+            return False
 
     def success(text):
         print(f"{Style.RESET_ALL}[{Style.BRIGHT}{Fore.GREEN}+{Style.RESET_ALL}] {text}")
@@ -60,10 +69,7 @@ def main():
             exit()
         except:
             soup = BeautifulSoup(driver.page_source, features="lxml")
-            input()
-            selected_profile = soup.find('button', {'class': 'btn btn-light btn-block text-dark mb-3 text-ellipsis active'}).getText()
-            input()
-            info(f"You have successfully logged in with the NameMC profile {selected_profile}.\nIf this is incorrect, change your selected profile on NameMC.com.")
+
 
             # Begin Following
             with open(inputFile) as f:
@@ -72,37 +78,40 @@ def main():
                 f.close()
             pos = 1
             for name in names:
-                driver.get(f"https://namemc.com/{name}")
-                try:
-                    driver.find_element_by_css_selector('#followMenuButton').click()
-                    driver.find_element_by_css_selector('#header > div.container.mt-3 > div > div.col > div > div > form > div > div > button:nth-child(1)').click()
-                    soup = BeautifulSoup(driver.page_source, features="lxml")
-                    if soup.find("samp", {"class": "font-weight-bold"}):
-                        raise Exception("Ratelimited")
-                    else:
-                        success(f'{pos}/{len(names)} | Successfully followed {name}')
-                except:
-                    while True:
+                if valid(name):
+                    driver.get(f"https://namemc.com/{name}")
+                    try:
+                        driver.find_element_by_css_selector('#followMenuButton').click()
+                        driver.find_element_by_css_selector('#header > div.container.mt-3 > div > div.col > div > div > form > div > div > button:nth-child(1)').click()
                         soup = BeautifulSoup(driver.page_source, features="lxml")
-                        if soup.find('samp', {"class": "font-weight-bold"}): #ratelimit check
-                            error(f"Failed to follow {name}. | {pos}/{len(names)}")
-                            ratelimitText = soup.find('samp', {"class": "font-weight-bold"}).getText()
-                            num = ""
-                            for char in ratelimitText:
-                                if char.isdigit():
-                                    num = num + char
-                            ratelimited(num)
+                        if soup.find("samp", {"class": "font-weight-bold"}):
+                            raise Exception("Ratelimited")
                         else:
-                            error(f"{pos}/{len(names)} | {name} already followed.")
-                            break
-                        driver.get(f"https://namemc.com/{name}")
-                        try:
-                            driver.find_element_by_css_selector('#followMenuButton').click()
-                            driver.find_element_by_css_selector('#header > div.container.mt-3 > div > div.col > div > div > form > div > div > button:nth-child(1)').click()
                             success(f'{pos}/{len(names)} | Successfully followed {name}')
-                            break
-                        except:
-                            pass
+                    except:
+                        while True:
+                            soup = BeautifulSoup(driver.page_source, features="lxml")
+                            if soup.find('samp', {"class": "font-weight-bold"}): #ratelimit check
+                                error(f"Failed to follow {name}. | {pos}/{len(names)}")
+                                ratelimitText = soup.find('samp', {"class": "font-weight-bold"}).getText()
+                                num = ""
+                                for char in ratelimitText:
+                                    if char.isdigit():
+                                        num = num + char
+                                ratelimited(num)
+                            else:
+                                error(f"{pos}/{len(names)} | {name} already followed.")
+                                break
+                            driver.get(f"https://namemc.com/{name}")
+                            try:
+                                driver.find_element_by_css_selector('#followMenuButton').click()
+                                driver.find_element_by_css_selector('#header > div.container.mt-3 > div > div.col > div > div > form > div > div > button:nth-child(1)').click()
+                                success(f'{pos}/{len(names)} | Successfully followed {name}')
+                                break
+                            except:
+                                pass
+                else:
+                    error(f"{pos}/{len(names)} | Skipped {name} as it's invalid.")
                 pos += 1
                 
 
